@@ -9,10 +9,10 @@
     <meta name="apple-mobile-web-app-title" content="不系舟" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>不系舟</title>
-    <link rel="icon" href="./icon.svg?v=2.2" />
-    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=2.2" />
-    <link rel="manifest" href="./manifest.webmanifest?v=2.2" />
-    <link rel="stylesheet" href="./styles.css?v=2.2" />
+    <link rel="icon" href="./icon-192.png?v=2.5" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=2.5" />
+    <link rel="manifest" href="./manifest.webmanifest?v=2.5" />
+    <link rel="stylesheet" href="./styles.css?v=2.5" />
   </head>
   <body>
     <main class="app-shell">
@@ -22,11 +22,7 @@
         <header class="lockbar">
           <div class="brand-lockup" aria-label="不系舟">
             <span class="brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 48 48" role="img">
-                <path class="mark-hull" d="M9 29.5c8.2 8.4 21.8 8.4 30 0-1.9 8.5-8.1 13-15 13s-13.1-4.5-15-13Z" />
-                <path class="mark-sail" d="M18.2 27.4c4.4-8.8 10.6-15.3 18.5-19.2-.8 8.3-3.7 15.4-8.5 21.2-3.7.4-7-.3-10-2Z" />
-                <path class="mark-wave" d="M15.5 28.8c5.9-2.2 12-2.3 18.3-.3" />
-              </svg>
+              <img src="./icon-192.png?v=2.5" alt="" />
             </span>
             <h1>不系舟</h1>
           </div>
@@ -50,25 +46,21 @@
             </div>
           </article>
 
-          <a class="glass-notice music-notice" id="musicLink" target="_blank" rel="noreferrer" aria-label="打开音乐搜索">
-            <div class="notice-icon notice-icon-music" aria-hidden="true">♪</div>
-            <div>
-              <div class="notice-meta">
-                <span>音乐</span>
-                <span>推荐</span>
-              </div>
-              <h2 id="musicTitle"></h2>
-              <p id="musicArtist"></p>
-            </div>
-          </a>
-
           <article class="panel capture-panel" aria-labelledby="captureTitle">
             <div class="section-heading">
               <h2 id="captureTitle">快速记录</h2>
               <span id="saveStatus" role="status" aria-live="polite"></span>
             </div>
             <textarea id="noteInput" rows="3" placeholder="写下刚刚经过你的东西" aria-label="快速记录内容"></textarea>
-            <button class="primary-button" id="saveNoteButton" type="button">保存</button>
+            <div class="photo-preview hidden" id="photoPreview">
+              <img id="photoPreviewImage" alt="待保存照片预览" />
+              <button class="photo-remove-button" id="removePhotoButton" type="button">移除照片</button>
+            </div>
+            <div class="capture-actions">
+              <button class="secondary-button" id="addPhotoButton" type="button">添加照片</button>
+              <input class="visually-hidden" id="photoInput" type="file" accept="image/*" />
+              <button class="primary-button" id="saveNoteButton" type="button">保存</button>
+            </div>
           </article>
         </section>
 
@@ -133,6 +125,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=2.2"></script>
+    <script src="./app.js?v=2.5"></script>
   </body>
 </html>

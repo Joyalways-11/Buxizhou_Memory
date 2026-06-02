@@ -1,6 +1,7 @@
 const STORAGE_KEY = "buxizhou-v1";
 const DRAFT_KEY = "buxizhou-note-draft";
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
+const MAX_NOTE_IMAGE_SIZE = 1280;
 
 const feed = {
   quotes: [
@@ -8,14 +9,42 @@ const feed = {
     { text: "采菊东篱下，悠然见南山。", source: "陶渊明《饮酒》" },
     { text: "山中何所有，岭上多白云。", source: "陶弘景《诏问山中何所有赋诗以答》" },
     { text: "人生天地间，忽如远行客。", source: "《古诗十九首》" },
-    { text: "落霞与孤鹜齐飞，秋水共长天一色。", source: "王勃《滕王阁序》" }
-  ],
-  music: [
-    { title: "山丘", artist: "李宗盛" },
-    { title: "我用什么把你留住", artist: "福禄寿FloruitShow" },
-    { title: "春光乍泄", artist: "黄耀明" },
-    { title: "Mystery of Love", artist: "Sufjan Stevens" },
-    { title: "Sweet Disposition", artist: "The Temper Trap" }
+    { text: "落霞与孤鹜齐飞，秋水共长天一色。", source: "王勃《滕王阁序》" },
+    { text: "疏影横斜水清浅，暗香浮动月黄昏。", source: "林逋《山园小梅》" },
+    { text: "明月松间照，清泉石上流。", source: "王维《山居秋暝》" },
+    { text: "海日生残夜，江春入旧年。", source: "王湾《次北固山下》" },
+    { text: "野旷天低树，江清月近人。", source: "孟浩然《宿建德江》" },
+    { text: "星垂平野阔，月涌大江流。", source: "杜甫《旅夜书怀》" },
+    { text: "白日依山尽，黄河入海流。", source: "王之涣《登鹳雀楼》" },
+    { text: "春水碧于天，画船听雨眠。", source: "韦庄《菩萨蛮》" },
+    { text: "春潮带雨晚来急，野渡无人舟自横。", source: "韦应物《滁州西涧》" },
+    { text: "自在飞花轻似梦，无边丝雨细如愁。", source: "秦观《浣溪沙》" },
+    { text: "山气日夕佳，飞鸟相与还。", source: "陶渊明《饮酒》" },
+    { text: "大漠孤烟直，长河落日圆。", source: "王维《使至塞上》" },
+    { text: "江流天地外，山色有无中。", source: "王维《汉江临泛》" },
+    { text: "梨花院落溶溶月，柳絮池塘淡淡风。", source: "晏殊《无题》" },
+    { text: "绿杨烟外晓寒轻，红杏枝头春意闹。", source: "宋祁《玉楼春》" },
+    { text: "独立小桥风满袖，平林新月人归后。", source: "冯延巳《鹊踏枝》" },
+    { text: "水晶帘动微风起，满架蔷薇一院香。", source: "高骈《山亭夏日》" },
+    { text: "人闲桂花落，夜静春山空。", source: "王维《鸟鸣涧》" },
+    { text: "荷风送香气，竹露滴清响。", source: "孟浩然《夏日南亭怀辛大》" },
+    { text: "天阶夜色凉如水，卧看牵牛织女星。", source: "杜牧《秋夕》" },
+    { text: "沾衣欲湿杏花雨，吹面不寒杨柳风。", source: "志南《绝句》" },
+    { text: "柴门闻犬吠，风雪夜归人。", source: "刘长卿《逢雪宿芙蓉山主人》" },
+    { text: "浮云游子意，落日故人情。", source: "李白《送友人》" },
+    { text: "云青青兮欲雨，水澹澹兮生烟。", source: "李白《梦游天姥吟留别》" },
+    { text: "溪云初起日沉阁，山雨欲来风满楼。", source: "许浑《咸阳城东楼》" },
+    { text: "小楼一夜听春雨，深巷明朝卖杏花。", source: "陆游《临安春雨初霁》" },
+    { text: "树深时见鹿，溪午不闻钟。", source: "李白《访戴天山道士不遇》" },
+    { text: "看取莲花净，应知不染心。", source: "孟浩然《题大禹寺义公禅房》" },
+    { text: "晚来天欲雪，能饮一杯无。", source: "白居易《问刘十九》" },
+    { text: "庭院深深深几许，杨柳堆烟，帘幕无重数。", source: "欧阳修《蝶恋花》" },
+    { text: "一年好景君须记，最是橙黄橘绿时。", source: "苏轼《赠刘景文》" },
+    { text: "竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。", source: "苏轼《定风波》" },
+    { text: "试问岭南应不好，却道：此心安处是吾乡。", source: "苏轼《定风波》" },
+    { text: "众鸟高飞尽，孤云独去闲。", source: "李白《独坐敬亭山》" },
+    { text: "欲买桂花同载酒，终不似，少年游。", source: "刘过《唐多令》" },
+    { text: "流光容易把人抛，红了樱桃，绿了芭蕉。", source: "蒋捷《一剪梅》" }
   ],
   photos: [
     {
@@ -67,9 +96,11 @@ function normalizeState(input = {}) {
           .map((note) => ({
             id: note.id || createId(),
             text: String(note.text || "").trim(),
-            createdAt: normalizeDate(note.createdAt)
+            createdAt: normalizeDate(note.createdAt),
+            imageData: typeof note.imageData === "string" ? note.imageData : "",
+            imageName: typeof note.imageName === "string" ? note.imageName : ""
           }))
-          .filter((note) => note.text)
+          .filter((note) => note.text || note.imageData)
       : [],
     todos: Array.isArray(input.todos)
       ? input.todos
@@ -99,10 +130,12 @@ const els = {
   photoSource: document.querySelector("#photoSource"),
   quoteText: document.querySelector("#quoteText"),
   quoteSource: document.querySelector("#quoteSource"),
-  musicTitle: document.querySelector("#musicTitle"),
-  musicArtist: document.querySelector("#musicArtist"),
-  musicLink: document.querySelector("#musicLink"),
   noteInput: document.querySelector("#noteInput"),
+  photoInput: document.querySelector("#photoInput"),
+  addPhotoButton: document.querySelector("#addPhotoButton"),
+  photoPreview: document.querySelector("#photoPreview"),
+  photoPreviewImage: document.querySelector("#photoPreviewImage"),
+  removePhotoButton: document.querySelector("#removePhotoButton"),
   saveNoteButton: document.querySelector("#saveNoteButton"),
   saveStatus: document.querySelector("#saveStatus"),
   recentNotes: document.querySelector("#recentNotes"),
@@ -118,6 +151,7 @@ const els = {
 };
 
 let state = loadState();
+let pendingPhoto = null;
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -132,7 +166,12 @@ function loadState() {
 
 function saveState() {
   state.version = DATA_VERSION;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function dailyIndex(length, offset = 0) {
@@ -221,14 +260,10 @@ function formatDateTime(value) {
 
 function renderFeed() {
   const quote = feed.quotes[dailyIndex(feed.quotes.length, 1)];
-  const music = feed.music[dailyIndex(feed.music.length, 2)];
   const photo = feed.photos[dailyIndex(feed.photos.length, 4)];
 
   els.quoteText.textContent = quote.text;
   els.quoteSource.textContent = quote.source;
-  els.musicTitle.textContent = music.title;
-  els.musicArtist.textContent = music.artist;
-  els.musicLink.href = `https://music.163.com/#/search/m/?s=${encodeURIComponent(`${music.title} ${music.artist}`)}`;
   els.photoTitle.textContent = photo.title;
   els.photoSource.textContent = photo.source;
   els.photoBackdrop.style.backgroundImage = `url("${photo.image}")`;
@@ -266,7 +301,20 @@ function createNoteCard(note) {
   text.textContent = note.text;
 
   header.append(time, remove);
-  article.append(header, text);
+  article.append(header);
+
+  if (note.imageData) {
+    const image = document.createElement("img");
+    image.className = "note-photo";
+    image.src = note.imageData;
+    image.alt = note.imageName || "记录照片";
+    article.append(image);
+  }
+
+  if (note.text) {
+    article.append(text);
+  }
+
   return article;
 }
 
@@ -315,7 +363,7 @@ function renderMemories() {
 
 function saveNote() {
   const text = els.noteInput.value.trim();
-  if (!text) {
+  if (!text && !pendingPhoto) {
     els.saveStatus.textContent = "还没写内容";
     return;
   }
@@ -323,16 +371,96 @@ function saveNote() {
   state.notes.unshift({
     id: createId(),
     text,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    imageData: pendingPhoto?.dataUrl || "",
+    imageName: pendingPhoto?.name || ""
   });
-  saveState();
+
+  if (!saveState()) {
+    state.notes.shift();
+    els.saveStatus.textContent = "保存失败，照片太大";
+    return;
+  }
+
   localStorage.removeItem(DRAFT_KEY);
   els.noteInput.value = "";
+  clearPendingPhoto();
   els.saveStatus.textContent = "已保存";
   renderNotes();
   window.setTimeout(() => {
     els.saveStatus.textContent = "";
   }, 1600);
+}
+
+function clearPendingPhoto() {
+  pendingPhoto = null;
+  els.photoInput.value = "";
+  els.photoPreviewImage.removeAttribute("src");
+  els.photoPreview.classList.add("hidden");
+}
+
+function setPendingPhoto(photo) {
+  pendingPhoto = photo;
+  els.photoPreviewImage.src = photo.dataUrl;
+  els.photoPreview.classList.remove("hidden");
+}
+
+function handlePhotoInput(event) {
+  const [file] = event.target.files;
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    els.saveStatus.textContent = "请选择照片";
+    return;
+  }
+
+  els.saveStatus.textContent = "正在处理照片";
+  compressImage(file)
+    .then((dataUrl) => {
+      setPendingPhoto({ dataUrl, name: file.name });
+      els.saveStatus.textContent = "照片已添加";
+      window.setTimeout(() => {
+        if (els.saveStatus.textContent === "照片已添加") els.saveStatus.textContent = "";
+      }, 1400);
+    })
+    .catch(() => {
+      els.saveStatus.textContent = "照片添加失败";
+      els.photoInput.value = "";
+    });
+}
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.addEventListener("load", () => {
+      const scale = Math.min(1, MAX_NOTE_IMAGE_SIZE / Math.max(image.width, image.height));
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Canvas unavailable"));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, width, height);
+      URL.revokeObjectURL(objectUrl);
+      resolve(canvas.toDataURL("image/jpeg", 0.82));
+    });
+
+    image.addEventListener("error", () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Image load failed"));
+    });
+
+    image.src = objectUrl;
+  });
 }
 
 function saveNoteFromKeyboard(event) {
@@ -454,8 +582,13 @@ function importBackup(file) {
         throw new Error("Invalid backup");
       }
 
+      const previousState = state;
       state = normalizeState(nextState);
-      saveState();
+      if (!saveState()) {
+        state = previousState;
+        els.backupStatus.textContent = "导入失败，空间不够";
+        return;
+      }
       renderNotes();
       renderTodos();
       els.backupStatus.textContent = "已导入";
@@ -479,6 +612,9 @@ function bindEvents() {
   els.noteInput.addEventListener("input", () => {
     localStorage.setItem(DRAFT_KEY, els.noteInput.value);
   });
+  els.addPhotoButton.addEventListener("click", () => els.photoInput.click());
+  els.photoInput.addEventListener("change", handlePhotoInput);
+  els.removePhotoButton.addEventListener("click", clearPendingPhoto);
   els.exportButtonFooter.addEventListener("click", exportBackup);
   els.importButton.addEventListener("click", () => els.importFile.click());
   els.importFile.addEventListener("change", (event) => {

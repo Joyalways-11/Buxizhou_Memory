@@ -108,24 +108,12 @@ button {
   backdrop-filter: blur(18px) saturate(1.25);
 }
 
-.brand-mark svg {
+.brand-mark img {
+  display: block;
   width: 27px;
   height: 27px;
-}
-
-.mark-hull {
-  fill: rgba(255, 255, 255, 0.9);
-}
-
-.mark-sail {
-  fill: rgba(151, 230, 220, 0.9);
-}
-
-.mark-wave {
-  fill: none;
-  stroke: rgba(255, 205, 215, 0.95);
-  stroke-linecap: round;
-  stroke-width: 4;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
 h1,
@@ -245,10 +233,6 @@ h2 {
   font-family: Georgia, "Times New Roman", serif;
 }
 
-.notice-icon-music {
-  font-size: 30px;
-}
-
 .notice-meta {
   display: flex;
   justify-content: space-between;
@@ -267,7 +251,6 @@ h2 {
 }
 
 .quote-source,
-.music-notice p,
 .photo-credit {
   margin: 0;
   color: rgba(255, 255, 255, 0.72);
@@ -355,7 +338,6 @@ textarea:focus,
 
 .primary-button {
   width: 100%;
-  margin-top: 8px;
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -367,6 +349,44 @@ textarea:focus,
 
 .small-button {
   padding: 0 14px;
+}
+
+.capture-actions {
+  display: grid;
+  grid-template-columns: minmax(112px, 0.45fr) 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.photo-preview {
+  position: relative;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.photo-preview img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+}
+
+.photo-remove-button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(18, 17, 15, 0.46);
+  font-size: 12px;
+  font-weight: 720;
+  backdrop-filter: blur(18px) saturate(1.25);
 }
 
 .backup-actions {
@@ -430,6 +450,16 @@ textarea:focus,
   line-height: 1.58;
 }
 
+.note-photo {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  margin: 0 0 10px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
 .empty-state {
   color: var(--muted);
   font-size: 14px;
@@ -485,6 +515,7 @@ textarea:focus,
 .primary-button:active,
 .secondary-button:active,
 .small-button:active,
+.photo-remove-button:active,
 .glass-notice:active {
   transform: translateY(1px);
 }
