@@ -301,12 +301,16 @@ h2 {
 
 textarea,
 .todo-form input {
+  display: block;
   width: 100%;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 18px;
   color: #fff;
   background: var(--field);
   outline: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 textarea {
@@ -319,6 +323,22 @@ textarea {
 textarea::placeholder,
 .todo-form input::placeholder {
   color: rgba(255, 255, 255, 0.52);
+}
+
+.todo-due-input {
+  max-width: 100%;
+  overflow: hidden;
+  text-align: center;
+}
+
+.todo-due-input::-webkit-date-and-time-value {
+  min-height: 1.4em;
+  text-align: center;
+}
+
+.todo-due-input::-webkit-calendar-picker-indicator {
+  opacity: 0.86;
+  filter: invert(1);
 }
 
 textarea:focus,
@@ -470,6 +490,7 @@ textarea:focus,
   grid-template-columns: 1fr;
   gap: 8px;
   margin-bottom: 10px;
+  overflow: hidden;
 }
 
 .todo-form input {
@@ -485,17 +506,48 @@ textarea:focus,
   padding: 12px 0;
 }
 
+.todo-item > div {
+  min-width: 0;
+}
+
 .todo-check {
-  width: 22px;
-  height: 22px;
+  display: grid;
+  width: 24px;
+  height: 24px;
   margin-top: 2px;
-  accent-color: #fff;
+  place-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.62);
+  border-radius: 50%;
+  background: var(--todo-color);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.todo-check::before {
+  width: 8px;
+  height: 12px;
+  content: "";
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.todo-check:checked::before {
+  opacity: 1;
+}
+
+.todo-check:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.28);
+  outline-offset: 2px;
 }
 
 .todo-title {
   margin: 0 0 4px;
   color: #fff;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .todo-item.done .todo-title {

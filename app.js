@@ -2,6 +2,7 @@ const STORAGE_KEY = "buxizhou-v1";
 const DRAFT_KEY = "buxizhou-note-draft";
 const DATA_VERSION = 3;
 const MAX_NOTE_IMAGE_SIZE = 1280;
+const TODO_COLORS = ["#ff8aa1", "#ffd166", "#7bdff2", "#b8f2c2", "#cdb4db", "#f6bd60"];
 
 const feed = {
   quotes: [
@@ -487,9 +488,10 @@ function renderTodoList(scope, container) {
     return;
   }
 
-  todos.forEach((todo) => {
+  todos.forEach((todo, index) => {
     const item = document.createElement("article");
     item.className = `todo-item${todo.done ? " done" : ""}`;
+    item.style.setProperty("--todo-color", TODO_COLORS[index % TODO_COLORS.length]);
 
     const checkbox = document.createElement("input");
     checkbox.className = "todo-check";
