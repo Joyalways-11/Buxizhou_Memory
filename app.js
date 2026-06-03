@@ -3,6 +3,7 @@ const DRAFT_KEY = "buxizhou-note-draft";
 const DATA_VERSION = 3;
 const MAX_NOTE_IMAGE_SIZE = 1280;
 const TODO_COLORS = ["#ff8aa1", "#ffd166", "#7bdff2", "#b8f2c2", "#cdb4db", "#f6bd60"];
+const NO_DUE_SORT_VALUE = Number.MAX_SAFE_INTEGER;
 
 const feed = {
   quotes: [
@@ -51,27 +52,32 @@ const feed = {
     {
       title: "Forest morning",
       source: "Unsplash",
-      image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&crop=entropy&w=1440&h=2560&q=92&dpr=2"
+      image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&crop=entropy&w=1440&h=2560&q=92&dpr=2",
+      position: "center center"
     },
     {
       title: "Mountain mist",
       source: "Pexels",
-      image: "https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=1440&h=2560&dpr=2"
+      image: "https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=1440&h=2560&dpr=2",
+      position: "center center"
     },
     {
       title: "Sea afterglow",
       source: "Unsplash",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&crop=entropy&w=1440&h=2560&q=92&dpr=2"
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&crop=entropy&w=1440&h=2560&q=92&dpr=2",
+      position: "center bottom"
     },
     {
-      title: "Window light",
+      title: "Lake quiet",
       source: "Unsplash",
-      image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&crop=entropy&w=1440&h=2560&q=92&dpr=2"
+      image: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&crop=entropy&w=1440&h=2560&q=92&dpr=2",
+      position: "center center"
     },
     {
-      title: "Northern light",
-      source: "Pexels",
-      image: "https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=1440&h=2560&dpr=2"
+      title: "Forest path",
+      source: "Unsplash",
+      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&crop=entropy&w=1440&h=2560&q=92&dpr=2",
+      position: "center center"
     }
   ]
 };
@@ -123,6 +129,10 @@ function normalizeDate(value) {
   return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
 }
 
+function getLocalDayKey(date = new Date()) {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
 const els = {
   timeText: document.querySelector("#timeText"),
   todayText: document.querySelector("#todayText"),
@@ -153,6 +163,7 @@ const els = {
 
 let state = loadState();
 let pendingPhoto = null;
+let currentTodoDayKey = getLocalDayKey();
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -259,6 +270,55 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+function getTodoTime(todo) {
+  if (!todo.due) return NO_DUE_SORT_VALUE;
+  const date = new Date(todo.due);
+  return Number.isNaN(date.getTime()) ? NO_DUE_SORT_VALUE : date.getTime();
+}
+
+function isSameLocalDay(value, target = new Date()) {
+  if (!value) return false;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+
+  return (
+    date.getFullYear() === target.getFullYear() &&
+    date.getMonth() === target.getMonth() &&
+    date.getDate() === target.getDate()
+  );
+}
+
+function compareTodos(a, b) {
+  if (a.done !== b.done) return a.done ? 1 : -1;
+
+  const timeA = getTodoTime(a);
+  const timeB = getTodoTime(b);
+  if (timeA !== timeB) return timeA - timeB;
+
+  return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+}
+
+function syncTodoScopesByDate() {
+  let changed = false;
+
+  state.todos.forEach((todo) => {
+    if (todo.scope === "week" && isSameLocalDay(todo.due)) {
+      todo.scope = "today";
+      changed = true;
+    }
+  });
+
+  if (changed) saveState();
+}
+
+function refreshTodosAfterDayChange() {
+  const nextDayKey = getLocalDayKey();
+  if (nextDayKey === currentTodoDayKey) return;
+
+  currentTodoDayKey = nextDayKey;
+  renderTodos();
+}
+
 function renderFeed() {
   const quote = feed.quotes[dailyIndex(feed.quotes.length, 1)];
   const photo = feed.photos[dailyIndex(feed.photos.length, 4)];
@@ -268,6 +328,7 @@ function renderFeed() {
   els.photoTitle.textContent = photo.title;
   els.photoSource.textContent = photo.source;
   els.photoBackdrop.style.backgroundImage = `url("${photo.image}")`;
+  els.photoBackdrop.style.backgroundPosition = photo.position || "center center";
 }
 
 function createNoteCard(note) {
@@ -472,12 +533,13 @@ function saveNoteFromKeyboard(event) {
 }
 
 function renderTodos() {
+  syncTodoScopesByDate();
   renderTodoList("today", els.todayTodos);
   renderTodoList("week", els.weekTodos);
 }
 
 function renderTodoList(scope, container) {
-  const todos = state.todos.filter((todo) => todo.scope === scope);
+  const todos = state.todos.filter((todo) => todo.scope === scope).sort(compareTodos);
   container.innerHTML = "";
 
   if (!todos.length) {
@@ -492,6 +554,7 @@ function renderTodoList(scope, container) {
     const item = document.createElement("article");
     item.className = `todo-item${todo.done ? " done" : ""}`;
     item.style.setProperty("--todo-color", TODO_COLORS[index % TODO_COLORS.length]);
+    item.style.setProperty("--todo-order", index);
 
     const checkbox = document.createElement("input");
     checkbox.className = "todo-check";
@@ -638,3 +701,4 @@ renderNotes();
 renderTodos();
 bindEvents();
 window.setInterval(renderClock, 1000);
+window.setInterval(refreshTodosAfterDayChange, 60000);

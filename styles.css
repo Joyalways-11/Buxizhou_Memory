@@ -73,9 +73,13 @@ button {
 .lockscreen-bg {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100svh;
   z-index: 0;
   background-color: #453f38;
-  background-position: center;
+  background-position: center center;
+  background-repeat: no-repeat;
   background-size: cover;
   transform: translateZ(0);
 }
@@ -504,6 +508,9 @@ textarea:focus,
   gap: 8px;
   align-items: start;
   padding: 12px 0;
+  animation: todoSlideIn 180ms ease both;
+  animation-delay: calc(var(--todo-order, 0) * 22ms);
+  transition: opacity 180ms ease, transform 180ms ease, border-color 180ms ease;
 }
 
 .todo-item > div {
@@ -555,6 +562,10 @@ textarea:focus,
   text-decoration: line-through;
 }
 
+.todo-item.done {
+  opacity: 0.68;
+}
+
 .delete-button {
   width: 28px;
   height: 28px;
@@ -598,5 +609,17 @@ textarea:focus,
 
   textarea {
     min-height: 64px;
+  }
+}
+
+@keyframes todoSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
