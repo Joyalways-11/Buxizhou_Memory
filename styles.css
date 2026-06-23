@@ -356,7 +356,8 @@ textarea:focus,
 
 .primary-button,
 .secondary-button,
-.small-button {
+.small-button,
+.danger-button {
   min-height: 40px;
   border-radius: 16px;
   color: #fff;
@@ -372,6 +373,11 @@ textarea:focus,
 .small-button {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.danger-button {
+  background: rgba(255, 113, 113, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 .text-toggle-button {
@@ -463,6 +469,45 @@ textarea:focus,
 
 .cloud-actions {
   grid-template-columns: 1fr 1fr;
+}
+
+.confirm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(7, 9, 10, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.confirm-card {
+  width: min(100%, 340px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  padding: 18px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  backdrop-filter: blur(34px) saturate(1.35);
+}
+
+.confirm-card h2 {
+  margin-bottom: 8px;
+}
+
+.confirm-card p {
+  margin-bottom: 16px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .export-wide {
@@ -624,13 +669,18 @@ textarea:focus,
 .primary-button:active,
 .secondary-button:active,
 .small-button:active,
+.danger-button:active,
 .photo-remove-button:active,
 .glass-notice:active {
   transform: translateY(1px);
 }
 
-.hidden,
+.hidden:not(.confirm-layer),
 .visually-hidden {
+  display: none;
+}
+
+.confirm-layer.hidden {
   display: none;
 }
 

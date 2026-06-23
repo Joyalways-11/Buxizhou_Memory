@@ -13,8 +13,6 @@ const MAX_NOTE_IMAGE_SIZE = 960;
 const PHOTO_JPEG_QUALITY = 0.72;
 const BACKUP_REMINDER_DAYS = 7;
 const BACKUP_REMINDER_NOTES = 10;
-const REMINDER_HOUR = 22;
-const REMINDER_MINUTE = 30;
 const CLOUD_CONFIG = window.BUXIZHOU_CLOUD || {};
 const SUPABASE_URL = CLOUD_CONFIG.supabaseUrl || "";
 const SUPABASE_ANON_KEY = CLOUD_CONFIG.supabaseAnonKey || "";
@@ -192,7 +190,9 @@ const els = {
   syncNowButton: document.querySelector("#syncNowButton"),
   uploadLocalButton: document.querySelector("#uploadLocalButton"),
   logoutButton: document.querySelector("#logoutButton"),
-  calendarReminderButton: document.querySelector("#calendarReminderButton"),
+  deleteConfirmLayer: document.querySelector("#deleteConfirmLayer"),
+  confirmDeleteButton: document.querySelector("#confirmDeleteButton"),
+  cancelDeleteButton: document.querySelector("#cancelDeleteButton"),
   clearDoneButton: document.querySelector("#clearDoneButton"),
   todayTodos: document.querySelector("#todayTodos"),
   weekTodos: document.querySelector("#weekTodos")
@@ -205,6 +205,7 @@ let recentCollapsed = localStorage.getItem(RECENT_COLLAPSED_KEY) === "true";
 let supabaseClient = null;
 let syncUser = null;
 let syncReady = false;
+let notePendingDelete = null;
 
 function openDiaryDb() {
   return new Promise((resolve, reject) => {
@@ -488,6 +489,39 @@ function renderFeed() {
   els.photoBackdrop.style.backgroundPosition = photo.position || "center center";
 }
 
+function openDeleteConfirm(note) {
+  notePendingDelete = note;
+  els.deleteConfirmLayer.classList.remove("hidden");
+  els.confirmDeleteButton.focus();
+}
+
+function closeDeleteConfirm() {
+  notePendingDelete = null;
+  els.deleteConfirmLayer.classList.add("hidden");
+}
+
+async function deletePendingNote() {
+  if (!notePendingDelete) return;
+
+  const note = notePendingDelete;
+  const previousDeletedAt = note.deletedAt;
+  const previousUpdatedAt = note.updatedAt;
+  const deletedAt = new Date().toISOString();
+  note.deletedAt = deletedAt;
+  note.updatedAt = deletedAt;
+  closeDeleteConfirm();
+
+  if (!(await saveState())) {
+    note.deletedAt = previousDeletedAt;
+    note.updatedAt = previousUpdatedAt;
+    els.saveStatus.textContent = "删除失败，稍后再试";
+    return;
+  }
+  renderNotes();
+  renderStorageSummary();
+  void syncIfReady();
+}
+
 function createNoteCard(note) {
   const article = document.createElement("article");
   article.className = "note-card";
@@ -510,20 +544,7 @@ function createNoteCard(note) {
   remove.type = "button";
   remove.textContent = "删除";
   remove.setAttribute("aria-label", "删除记录");
-  remove.addEventListener("click", async () => {
-    const previousDeletedAt = note.deletedAt;
-    const deletedAt = new Date().toISOString();
-    note.deletedAt = deletedAt;
-    note.updatedAt = deletedAt;
-    if (!(await saveState())) {
-      note.deletedAt = previousDeletedAt;
-      els.saveStatus.textContent = "删除失败，稍后再试";
-      return;
-    }
-    renderNotes();
-    renderStorageSummary();
-    void syncIfReady();
-  });
+  remove.addEventListener("click", () => openDeleteConfirm(note));
 
   const text = document.createElement("p");
   text.textContent = note.text;
@@ -965,7 +986,7 @@ function renderCloudPanel() {
 
   if (!syncUser) {
     els.syncStatus.textContent = "未登录";
-    els.cloudHelp.textContent = "输入邮箱后，会收到一封登录邮件。登录后可手动上传本机记录。";
+    els.cloudHelp.textContent = "输入邮箱后，会收到一封登录邮件。iPhone 主屏幕入口和 Safari 是独立入口，需要分别登录后用云同步对齐。";
     return;
   }
 
@@ -1016,14 +1037,20 @@ async function sendLoginEmail() {
   }
 
   els.syncStatus.textContent = "发送中";
+  const redirectTo = `${window.location.origin}${window.location.pathname}`;
   const { error } = await supabaseClient.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: window.location.href
+      emailRedirectTo: redirectTo
     }
   });
-  els.syncStatus.textContent = error ? "发送失败" : "请查收邮件";
-  if (!error) els.cloudHelp.textContent = "打开邮件里的登录链接后，再回到不系舟。";
+  if (error) {
+    els.syncStatus.textContent = "发送失败";
+    els.cloudHelp.textContent = `失败原因：${error.message || "请检查 Supabase 登录配置和网络"}`;
+    return;
+  }
+  els.syncStatus.textContent = "请查收邮件";
+  els.cloudHelp.textContent = "打开邮件里的登录链接后，再回到不系舟。";
 }
 
 async function logoutCloud() {
@@ -1108,57 +1135,6 @@ async function syncWithCloud({ confirmUpload = false } = {}) {
 function syncIfReady() {
   if (!syncReady || !cloudUploadConfirmed()) return Promise.resolve();
   return syncWithCloud();
-}
-
-function padDatePart(value) {
-  return String(value).padStart(2, "0");
-}
-
-function formatIcsLocalDateTime(date) {
-  return `${date.getFullYear()}${padDatePart(date.getMonth() + 1)}${padDatePart(date.getDate())}T${padDatePart(date.getHours())}${padDatePart(date.getMinutes())}00`;
-}
-
-function formatIcsUtcDateTime(date) {
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-}
-
-function getNextReminderDate() {
-  const next = new Date();
-  next.setHours(REMINDER_HOUR, REMINDER_MINUTE, 0, 0);
-  if (next.getTime() <= Date.now()) {
-    next.setDate(next.getDate() + 1);
-  }
-  return next;
-}
-
-function downloadCalendarReminder() {
-  const start = getNextReminderDate();
-  const end = new Date(start.getTime() + 10 * 60 * 1000);
-  const appUrl = window.location.href.split("#")[0];
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Buxizhou//Diary Reminder//ZH-CN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    "UID:buxizhou-diary-reminder@buxizhou",
-    `DTSTAMP:${formatIcsUtcDateTime(new Date())}`,
-    `DTSTART;TZID=Asia/Shanghai:${formatIcsLocalDateTime(start)}`,
-    `DTEND;TZID=Asia/Shanghai:${formatIcsLocalDateTime(end)}`,
-    "RRULE:FREQ=DAILY",
-    "SUMMARY:写不系舟",
-    `DESCRIPTION:打开不系舟写几句今天的记录。\\n${appUrl}`,
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ];
-  const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "buxizhou-daily-reminder.ics";
-  link.click();
-  URL.revokeObjectURL(url);
 }
 
 function exportBackup() {
@@ -1263,7 +1239,16 @@ function bindEvents() {
   els.syncNowButton.addEventListener("click", () => void syncWithCloud());
   els.uploadLocalButton.addEventListener("click", () => void syncWithCloud({ confirmUpload: true }));
   els.logoutButton.addEventListener("click", logoutCloud);
-  els.calendarReminderButton.addEventListener("click", downloadCalendarReminder);
+  els.cancelDeleteButton.addEventListener("click", closeDeleteConfirm);
+  els.confirmDeleteButton.addEventListener("click", () => void deletePendingNote());
+  els.deleteConfirmLayer.addEventListener("click", (event) => {
+    if (event.target === els.deleteConfirmLayer) closeDeleteConfirm();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !els.deleteConfirmLayer.classList.contains("hidden")) {
+      closeDeleteConfirm();
+    }
+  });
 
   document.querySelectorAll(".todo-form").forEach((form) => {
     form.addEventListener("submit", addTodo);

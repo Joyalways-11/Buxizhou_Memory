@@ -9,10 +9,10 @@
     <meta name="apple-mobile-web-app-title" content="不系舟" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>不系舟</title>
-    <link rel="icon" href="./icon-192.png?v=3.0" />
-    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=3.0" />
-    <link rel="manifest" href="./manifest.webmanifest?v=3.0" />
-    <link rel="stylesheet" href="./styles.css?v=3.0" />
+    <link rel="icon" href="./icon-192.png?v=3.2" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=3.2" />
+    <link rel="manifest" href="./manifest.webmanifest?v=3.2" />
+    <link rel="stylesheet" href="./styles.css?v=3.2" />
   </head>
   <body>
     <main class="app-shell">
@@ -22,7 +22,7 @@
         <header class="lockbar">
           <div class="brand-lockup" aria-label="不系舟">
             <span class="brand-mark" aria-hidden="true">
-              <img src="./icon-192.png?v=3.0" alt="" />
+              <img src="./icon-192.png?v=3.2" alt="" />
             </span>
             <h1>不系舟</h1>
           </div>
@@ -138,22 +138,25 @@
           <p class="storage-status" id="cloudHelp"></p>
         </section>
 
-        <section class="panel reminder-panel" aria-labelledby="reminderTitle">
-          <div class="section-heading">
-            <h2 id="reminderTitle">提醒</h2>
-          </div>
-          <button class="secondary-button export-wide" id="calendarReminderButton" type="button">添加 22:30 日历提醒</button>
-          <p class="storage-status">会生成一个苹果日历可导入的每日重复事件。</p>
-        </section>
-
         <div class="photo-credit">
           <span id="photoSource"></span>
           <span id="photoTitle"></span>
         </div>
       </section>
+
+      <div class="confirm-layer hidden" id="deleteConfirmLayer" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+        <section class="confirm-card">
+          <h2 id="deleteConfirmTitle">是否确认删除</h2>
+          <p>这条记录会从最近记录里移除，并同步到云端。</p>
+          <div class="confirm-actions">
+            <button class="secondary-button" id="cancelDeleteButton" type="button">返回</button>
+            <button class="danger-button" id="confirmDeleteButton" type="button">确认</button>
+          </div>
+        </section>
+      </div>
     </main>
 
-    <script src="./cloud-config.js?v=3.0"></script>
-    <script src="./app.js?v=3.0"></script>
+    <script src="./cloud-config.js?v=3.2"></script>
+    <script src="./app.js?v=3.2"></script>
   </body>
 </html>
