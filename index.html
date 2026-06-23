@@ -9,10 +9,10 @@
     <meta name="apple-mobile-web-app-title" content="不系舟" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>不系舟</title>
-    <link rel="icon" href="./icon-192.png?v=2.8" />
-    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=2.8" />
-    <link rel="manifest" href="./manifest.webmanifest?v=2.8" />
-    <link rel="stylesheet" href="./styles.css?v=2.8" />
+    <link rel="icon" href="./icon-192.png?v=3.0" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=3.0" />
+    <link rel="manifest" href="./manifest.webmanifest?v=3.0" />
+    <link rel="stylesheet" href="./styles.css?v=3.0" />
   </head>
   <body>
     <main class="app-shell">
@@ -22,7 +22,7 @@
         <header class="lockbar">
           <div class="brand-lockup" aria-label="不系舟">
             <span class="brand-mark" aria-hidden="true">
-              <img src="./icon-192.png?v=2.8" alt="" />
+              <img src="./icon-192.png?v=3.0" alt="" />
             </span>
             <h1>不系舟</h1>
           </div>
@@ -77,7 +77,9 @@
         <section class="panel recent-panel" aria-labelledby="recentTitle">
           <div class="section-heading">
             <h2 id="recentTitle">最近记录</h2>
+            <button class="text-toggle-button" id="recentToggleButton" type="button" aria-expanded="true">收起</button>
           </div>
+          <p class="recent-summary hidden" id="recentSummary"></p>
           <div id="recentNotes" class="note-list empty-state">还没有记录。</div>
         </section>
 
@@ -116,6 +118,32 @@
             <input class="visually-hidden" id="importFile" type="file" accept="application/json" />
             <button class="secondary-button" id="clearDoneButton" type="button">清理已完成</button>
           </div>
+          <p class="storage-status" id="storageStatus"></p>
+        </section>
+
+        <section class="panel cloud-panel" aria-labelledby="cloudTitle">
+          <div class="section-heading">
+            <h2 id="cloudTitle">云同步</h2>
+            <span id="syncStatus" role="status" aria-live="polite"></span>
+          </div>
+          <div class="cloud-auth" id="cloudAuth">
+            <input id="syncEmail" type="email" inputmode="email" autocomplete="email" placeholder="邮箱" aria-label="云同步邮箱" />
+            <button class="secondary-button" id="sendLoginButton" type="button">发送登录邮件</button>
+          </div>
+          <div class="cloud-actions hidden" id="cloudActions">
+            <button class="secondary-button export-wide" id="syncNowButton" type="button">立即同步</button>
+            <button class="secondary-button" id="uploadLocalButton" type="button">上传本机记录</button>
+            <button class="secondary-button" id="logoutButton" type="button">退出登录</button>
+          </div>
+          <p class="storage-status" id="cloudHelp"></p>
+        </section>
+
+        <section class="panel reminder-panel" aria-labelledby="reminderTitle">
+          <div class="section-heading">
+            <h2 id="reminderTitle">提醒</h2>
+          </div>
+          <button class="secondary-button export-wide" id="calendarReminderButton" type="button">添加 22:30 日历提醒</button>
+          <p class="storage-status">会生成一个苹果日历可导入的每日重复事件。</p>
         </section>
 
         <div class="photo-credit">
@@ -125,6 +153,7 @@
       </section>
     </main>
 
-    <script src="./app.js?v=2.8"></script>
+    <script src="./cloud-config.js?v=3.0"></script>
+    <script src="./app.js?v=3.0"></script>
   </body>
 </html>
