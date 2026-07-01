@@ -764,10 +764,20 @@ function renderTodoList(scope, container) {
     checkbox.setAttribute("aria-label", "标记完成");
     checkbox.addEventListener("change", async () => {
       const previousDone = todo.done;
+      const previousDeletedAt = todo.deletedAt;
+      const previousUpdatedAt = todo.updatedAt;
+      const completedAt = new Date().toISOString();
       todo.done = checkbox.checked;
-      markUpdated(todo);
+      if (checkbox.checked) {
+        todo.deletedAt = completedAt;
+        todo.updatedAt = completedAt;
+      } else {
+        markUpdated(todo);
+      }
       if (!(await saveState())) {
         todo.done = previousDone;
+        todo.deletedAt = previousDeletedAt;
+        todo.updatedAt = previousUpdatedAt;
       }
       renderTodos();
       renderStorageSummary();
@@ -986,7 +996,7 @@ function renderCloudPanel() {
 
   if (!syncUser) {
     els.syncStatus.textContent = "未登录";
-    els.cloudHelp.textContent = "输入邮箱后，会收到一封登录邮件。iPhone 主屏幕入口和 Safari 是独立入口，需要分别登录后用云同步对齐。";
+    els.cloudHelp.textContent = "输入邮箱后，会收到一封登录邮件。新版桌面快捷方式会通过 Safari 打开，和 Safari 使用同一份本地数据。";
     return;
   }
 
